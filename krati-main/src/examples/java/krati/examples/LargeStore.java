@@ -23,6 +23,8 @@ import java.util.Random;
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.StoreParams;
+import krati.core.segment.ChannelSegmentFactory;
+import krati.core.segment.DirectBufferSegmentFactory;
 import krati.core.segment.WriteBufferSegmentFactory;
 import krati.io.Closeable;
 import krati.store.DataStore;
@@ -45,7 +47,7 @@ import krati.store.index.HashIndexDataHandler;
  * @since 08/15, 2012
  */
 public class LargeStore implements Closeable {
-    private final int _initialCapacity;
+    private int _initialCapacity;
     private final DataStore<byte[], byte[]> _store;
     
     /**
@@ -79,7 +81,7 @@ public class LargeStore implements Closeable {
         
         // Configure store segments
         config.setSegmentFactory(new WriteBufferSegmentFactory());
-        config.setSegmentFileSizeMB(128);
+        config.setSegmentFileSizeMB(32);
         config.setSegmentCompactFactor(0.67);
         
         // Configure index segments
@@ -104,7 +106,7 @@ public class LargeStore implements Closeable {
      * Subclasses can override this method to provide specific values for a given key.
      */
     protected byte[] createDataForKey(String key) {
-        return ("Here is your data for " + key).getBytes();
+        return ("Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for Here is your data for " + key).getBytes();
     }
     
     /**
@@ -114,7 +116,7 @@ public class LargeStore implements Closeable {
      */
     public void populate() throws Exception {
         for (int i = 0; i < _initialCapacity; i++) {
-            String str = "key." + i;
+            String str = "keyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkeyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkeyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA." + i;
             byte[] key = str.getBytes();
             byte[] value = createDataForKey(str);
             _store.put(key, value);
@@ -131,10 +133,10 @@ public class LargeStore implements Closeable {
         Random rand = new Random();
         for (int i = 0; i < readCnt; i++) {
             int keyId = rand.nextInt(_initialCapacity);
-            String str = "key." + keyId;
+            String str = "keyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkeyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkeyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA." + keyId;
             byte[] key = str.getBytes();
             byte[] value = _store.get(key);
-            System.out.printf("Key=%s\tValue=%s%n", str, new String(value));
+            //System.out.printf("Key=%s\tValue=%s%n", str, new String(value));
         }
     }
     
@@ -195,11 +197,18 @@ public class LargeStore implements Closeable {
             LargeStore store = new LargeStore(homeDir, initialCapacity);
             
             // Populate data store
+            long start = System.nanoTime();
+/*
             store.populate();
-            
+*/
+            System.out.println("Loading: " + (System.nanoTime() - start)/1000000);
+
             // Perform some random reads from data store.
-            store.doRandomReads(10);
-            
+            start = System.nanoTime();
+            store._initialCapacity = 10000;
+            store.doRandomReads(100000);
+            System.out.println("Reading: " + (System.nanoTime() - start) / 1000000);
+
             // Close data store
             store.close();
         } catch (Exception e) {
